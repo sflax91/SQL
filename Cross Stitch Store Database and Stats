@@ -1,0 +1,37 @@
+-- create hypothetical crossstitch store database, where I sell designs for cross stitch. 
+-- each design has a unique id, a category, the design name ("item"), how much the design costs, and how difficult the design is (1=easy, 3=hard)
+
+CREATE TABLE crossstitch (id INTEGER PRIMARY KEY, category TEXT, item TEXT, unit_cost REAL, challenge_level INTEGER);
+
+INSERT INTO crossstitch VALUES
+(1, "animals", "bear", 1.99, 2),
+(2, "plants", "dandelion", 2.99, 1), 
+(3, "cityscapes", "New York", 2.99, 3),
+(4, "clothing", "tshirt", 1.99, 1),
+(5, "cityscapes", "Boston", 2.99, 3),
+(6, "plants", "elm", 1.99, 1),
+(7, "animals", "dog", 1.99, 2),
+(8, "plants", "fern", 1.99, 1),
+(9, "clothing", "skirt", 1.99, 1),
+(10, "clothing", "jeans", 1.99, 1),
+(11, "cityscapes", "Chicago", 2.99, 3),
+(12, "plants", "ficus", 1.99, 1),
+(13, "plants", "cactus", 1.99, 1),
+(14, "animals", "cat", 1.99, 2),
+(15, "cityscapes", "Barcelona", 2.99, 3);
+
+--display the store items, ordered from cheapest to most expensive
+SELECT
+*
+FROM 
+crossstitch
+ORDER BY
+unit_cost;
+
+-- what's the average cost of an item with a challenge level of 3?
+SELECT
+avg(unit_cost)
+FROM 
+crossstitch
+WHERE 
+challenge_level = 3
