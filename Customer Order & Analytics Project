@@ -1,4 +1,5 @@
-#Project completed in SQLiteStudio, using BIT_DB database downloaded from [here](https://www.dropbox.com/s/cvsasmtr8syq2c2/BIT_DB?dl=0) as part of Break Into Tech online course
+#Project completed in SQLiteStudio, using BIT_DB database downloaded from here:
+#https://www.dropbox.com/s/cvsasmtr8syq2c2/BIT_DB?dl=0 as part of Break Into Tech online course
 
 #Database contains six tables: JanSales, FebSales, MarSales, AprSales, MaySales, and customers.
 #customers table contains two attributes: order_id and acctnum
@@ -9,7 +10,7 @@
 
 #repeat process for other tables, confirm that types make sense for the info in the attributes (ex: datetime is the datatype for the orderdate atribute)
 
-## First question: How many orders were placed in January?
+#First question: How many orders were placed in January?
 #Before we begin, we need to check for clean data. A quick look (SELECT * FROM BIT_DB.JanSales) at our JanSales table, sorted by orderID ASC and DESC (by double clicking orderID column in results), shows that majority of orderIDs are 6-digit numbers, but others have the text "Order ID" and others are blank. We'll want to filter these out by attaching
   WHERE length(orderid) = 6
   AND orderid <> 'Order ID'
