@@ -1,0 +1,49 @@
+#Project completed in SQLiteStudio, using BIT_DB database downloaded from [here](https://www.dropbox.com/s/cvsasmtr8syq2c2/BIT_DB?dl=0) as part of Break Into Tech online course
+
+#Database contains six tables: JanSales, FebSales, MarSales, AprSales, MaySales, and customers.
+#customers table contains two attributes: order_id and acctnum
+#check data types on order_id and acctnum:
+  PRAGMA table_info(customers)
+  
+#order_id is varchar(8) and acctnum is varchar(10)
+
+#repeat process for other tables, confirm that types make sense for the info in the attributes (ex: datetime is the datatype for the orderdate atribute)
+
+## First question: How many orders were placed in January?
+#Before we begin, we need to check for clean data. A quick look (SELECT * FROM BIT_DB.JanSales) at our JanSales table, sorted by orderID ASC and DESC (by double clicking orderID column in results), shows that majority of orderIDs are 6-digit numbers, but others have the text "Order ID" and others are blank. We'll want to filter these out by attaching
+  WHERE length(orderid) = 6
+  AND orderid <> 'Order ID'
+to our queries.
+
+#Next, I want to check for duplicates. Duplicates might give us an incorrect number when searching for total orders placed in January. Using the following query:
+SELECT 
+    orderID,
+    product,
+    location,
+    quantity,
+    orderdate,
+    COUNT(*)
+FROM 
+    BIT_DB.JanSales
+WHERE length(orderid) = 6
+AND orderid <> 'Order ID'
+GROUP BY
+    orderID,
+    product,
+    location,
+    quantity,
+    orderdate
+HAVING COUNT(*) > 1
+
+#I found 10 instances where a row was repeated: same exact order time, quantity, product, etc. Running an abridged version of the above query (only selecting OrderID), I can see that OrderIDs can be repeated, but often have different products for the same order. And we know that more than 1 quantity of an item can be purchased (SELECT DISTINCT(quantity)FROM BIT_DB.JanSales). So, it would be fair to assume that these initial duplicates are errors, since instead of ordering the exact same item twice, one could order a quantity of 2. But, without understanding how these items were ordered (online shopping?), we can't immediately exclude these duplicates since we're not absolutely sure they're errors.
+
+#All that being said, the query
+  SELECT
+  Count(*)
+  FROM
+  BIT_DB.JanSales
+  WHERE length(orderid) = 6
+  AND orderid <> 'Order ID'
+#gives us the answer of 9,681 orders in January
+
+## Second question: How many of those orders were for an iPhone?
