@@ -100,4 +100,66 @@ _________________________
 
 _________________________
 #Fourth question: Which product was the cheapest one sold in January, and what was the price? 
-#
+#We can do this a number of ways, and since I like practicing subqueries, we'll use one (probably needlessly complicated for the information we want).
+#This is asking us two questions, which can each be represented by a query. First, what was the price of the cheapest product in January?
+  SELECT
+    min(price)
+  FROM
+    BIT_DB.JanSales
+
+#The above query tells us that minimum price was $2.99. Now, we can wrap that in another query to tell us what product is associated with that price:
+  SELECT
+    DISTINCT(product),
+    price
+  FROM
+    BIT_DB.JanSales
+  WHERE
+    price IN (
+              SELECT
+                min(price)
+              FROM
+                BIT_DB.JanSales
+              )
+
+#We find that the AAA Batteries (4-pack) was the product that cost $2.99.
+
+_________________________
+#Fifth question: What is the total revenue for each product sold in January?
+#This one requires us to do some in-query calculations. In effect, we need the total amount of each product sold, multiplied by how much that product costs.
+#In the query, we'd represent this as SUM(quantity)*price, and we'll group by the product:
+  SELECT 
+    product,
+    SUM(quantity)*price as total_revenue
+  FROM 
+    BIT_DB.JanSales Jan 
+  WHERE 
+    length(orderid) = 6
+  AND 
+    orderid <> 'Order ID'
+  GROUP BY
+    product
+
+#This gives us the list of all 19 products, with their total revenue in an adjacent column.
+
+_________________________
+#Sixth question: Which products were sold in February at 548 Lincoln St, Seattle, WA 98101, how many of each were sold, and what was the total revenue?
+#This is essentially the previous question, with an additional filter (and a different month).
+  SELECT
+    product,
+    quantity,
+    price,
+    SUM(quantity)*price as total_revenue,
+    location
+  FROM
+    BIT_DB.FebSales
+  WHERE 
+    length(orderid) = 6
+  AND 
+    orderid <> 'Order ID'
+  AND 
+    location = '548 Lincoln St, Seattle, WA 98101'
+
+#This address ordered 2 AA Batteries (4-pack), which cost a total of $7.68.
+
+_________________________
+#Seventh question: How many customers ordered more than 2 products at a time in February, and what was the average amount spent for those customers? 
