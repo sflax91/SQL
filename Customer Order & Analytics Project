@@ -44,8 +44,39 @@ to our queries.
 #I found 10 instances where a row was repeated: same exact order time, quantity, product, etc. 
 Running an abridged version of the above query (only selecting OrderID), I can see that OrderIDs can be repeated, but often have different products for the same order. 
 And we know that more than 1 quantity of an item can be purchased (SELECT DISTINCT(quantity)FROM BIT_DB.JanSales). 
-So, it would be fair to assume that these initial duplicates are errors, since instead of ordering the exact same item twice, one could order a quantity of 2. 
+So, it could be fair to assume that these initial duplicates are errors, since instead of ordering the exact same item twice, one could order a quantity of 2. 
 But, without understanding how these items were ordered (online shopping?), we can't immediately exclude these duplicates since we're not absolutely sure they're errors.
+In fact, there's one other possibility: an order # could be shared by multiple accounts. Taking a random order ID from the above results, we can join with the customers table:
+  SELECT 
+      acctnum,
+      orderID,
+      product,
+      location,
+      quantity,
+      orderdate
+  FROM 
+      BIT_DB.JanSales jan
+  INNER JOIN
+      BIT_DB.customers cust
+  ON
+      cust.order_ID = jan.orderID
+  WHERE 
+    length(orderid) = 6
+  AND 
+    orderid <> 'Order ID'
+  AND 
+    orderID = 141365
+  GROUP BY
+      acctnum
+  HAVING 
+    COUNT(*) > 1 
+
+#And lo and behold, 
+acctnum   orderID product         location                                quantity  orderdate
+77371355	141365	Vareebadd Phone	20 Dogwood St, New York City, NY 10001	1	        01/10/19 11:19
+90935286	141365	Vareebadd Phone	20 Dogwood St, New York City, NY 10001	1	        01/10/19 11:19
+
+#Two separate account numbers with the same orderID, product ordered, location, and order date and time. 
 
 #All that being said, the query
   SELECT
