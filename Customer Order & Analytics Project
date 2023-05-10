@@ -163,3 +163,30 @@ _________________________
 
 _________________________
 #Seventh question: How many customers ordered more than 2 products at a time in February, and what was the average amount spent for those customers? 
+#We can interpret this question in two ways. The first way would be to see which customers ordered the same product twice, separately but as part of the same order.
+#These are basically the duplicates we checked for in the first question. We run the following query:
+  SELECT 
+    DISTINCT orderID,
+    product,     
+    location,
+    quantity,
+    orderdate,
+    COUNT(*)
+  FROM 
+      BIT_DB.FebSales
+  WHERE 
+    length(orderid) = 6
+  AND 
+    orderid <> 'Order ID'
+  GROUP BY
+    orderID,
+    product,
+    location,
+    quantity,
+    orderdate
+  HAVING 
+    COUNT(*) > 1 
+  ORDER BY
+    orderID
+
+#We find 18 
