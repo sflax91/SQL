@@ -76,7 +76,7 @@ acctnum   orderID product         location                                quanti
 77371355	141365	Vareebadd Phone	20 Dogwood St, New York City, NY 10001	1	        01/10/19 11:19
 90935286	141365	Vareebadd Phone	20 Dogwood St, New York City, NY 10001	1	        01/10/19 11:19
 
-#Two separate account numbers with the same orderID, product ordered, location, and order date and time. 
+#Two separate account numbers with the same orderID, product ordered, location, and order date and time. In a normal business setting, 
 
 #All that being said, the query
   SELECT
