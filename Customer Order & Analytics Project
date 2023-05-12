@@ -76,7 +76,12 @@ acctnum   orderID product         location                                quanti
 77371355	141365	Vareebadd Phone	20 Dogwood St, New York City, NY 10001	1	        01/10/19 11:19
 90935286	141365	Vareebadd Phone	20 Dogwood St, New York City, NY 10001	1	        01/10/19 11:19
 
-#Two separate account numbers with the same orderID, product ordered, location, and order date and time. In a normal business setting, 
+#Two separate account numbers with the same orderID, product ordered, location, and order date and time. 
+In a normal business setting this would be a cause for concern, where I'd bring this to supervisors and try to get more clarity on the data,
+as it would be highly unusual for two separate accounts to have all other details be similar (unless it were a common occurance for roommates/
+significant others to click "buy" on the same item at the exact same time). However, this dataset being from a certificate course, it's likely
+that a lot of this data was randomly generated and re-used details over and over again, and my requests for clarity went unacknowledged. 
+So, we'll continue on as if these are separate, unrelated orders.
 
 #All that being said, the query
   SELECT
@@ -220,4 +225,23 @@ _________________________
   ORDER BY
     orderID
 
-#We find 18 
+#We find 18 duplicates. However, we know these duplicates are actually from separate accounts, based on what we learned in question 1. So, technically, they're separate customers.
+Thus, we'll want to focus on orders where the quantity ordered is greater than 2. We'll still need to join the customers dataset with the FebSales dataset to get our answer.
+Using the query
+  SELECT 
+    COUNT(DISTINCT cust.acctnum) num_of_cust, 
+    AVG(quantity*price) average_price
+  FROM 
+    BIT_DB.FebSales feb
+  LEFT JOIN 
+    BIT_DB.customers cust
+  ON 
+    feb.orderid = cust.order_id
+  WHERE 
+    feb.Quantity > 2
+  AND 
+    length(orderid) = 6 
+  AND 
+    orderid <> 'Order ID'
+
+#We learn that 278 customers ordered more than 2 products at a time in February, and they paid an average of $13.83.
