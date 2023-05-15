@@ -245,3 +245,20 @@ Using the query
     orderid <> 'Order ID'
 
 #We learn that 278 customers ordered more than 2 products at a time in February, and they paid an average of $13.83.
+
+_________________________
+#Eighth question: List all the products sold in Los Angeles in February, and include how many of each were sold. 
+#We need to tell SQL to look in the location field for the addresses that contain 'Los Angeles'. This is where the LIKE and % commands come in:
+  SELECT
+    product,
+    SUM(quantity)
+  FROM
+    BIT_DB.FebSales
+  WHERE
+    location LIKE '%Los Angeles%'
+  GROUP BY
+    product
+
+#This query produces a list of 19 products sold in February, with their total amount sold next to them.
+
+
