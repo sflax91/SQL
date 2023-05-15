@@ -261,4 +261,121 @@ _________________________
 
 #This query produces a list of 19 products sold in February, with their total amount sold next to them.
 
+_________________________
+#Ninth question: Which locations in New York received at least 3 orders in January, and how many orders did they each receive?
+#To break this down, the question is asking us to count the number of orders for locations in New York (state, but this should be clarified). 
+So, we'll use the LIKE command again, group it by location, then make sure we're limiting our results to only include instances where the count
+of the orders is greater than or equal to 3.
+  
+  SELECT
+      location,
+      COUNT(orderID) num_orders
+  FROM
+      BIT_DB.JanSales
+  WHERE
+      location like '%NY%'
+      AND length(orderid) = 6
+  AND orderid <> 'Order ID'
+  GROUP BY
+      location
+  HAVING
+      count(orderID) >= 3
+ 
+ #This gives us four addresses that received at least 3 orders in January:
+  location                                   num_orders
+  148 Elm St, New York City, NY 10001	       3
+  515 Lincoln St, New York City, NY 10001	   3
+  916 Pine St, New York City, NY 10001	     3
+  961 Jefferson St, New York City, NY 10001	 4
+  
+  _________________________
+  #Tenth question: How many of each type of headphone were sold in February?
+  #First, I want to refresh myself of all the products:
+    SELECT
+      distinct product
+    FROM
+      BIT_DB.FebSales
+    WHERE
+      length(orderid) = 6
+      AND orderid <> 'Order ID'
+      
+  #This gives us a list of 19 products, which is easy to scan by eye, and I can tell that there are only 3 types of headphones:
+  Apple Airpods Headphones, Bose SoundSport Headphones, Wired Headphones. So, our list should have these three headphones along with 
+  the total number sold. We can find that using this query:
+  
+    SELECT
+      product headphone_type,
+      sum(quantity) total_sold
+    FROM
+      BIT_DB.FebSales
+    WHERE
+      product LIKE '%Headphones%'
+      AND length(orderid) = 6
+      AND orderid <> 'Order ID'
+    GROUP BY
+      product
 
+#Results:
+  headphone_type              total_sold
+  Apple Airpods Headphones	  1013
+  Bose SoundSport Headphones	844
+  Wired Headphones	          1282
+
+_________________________
+#Eleventh question: What was the average amount spent per account in February? (We're looking for avg amount spent/total accounts)
+#This one involves a join and some fun arithmetic! Breaking this down, we want the total amount spent (price multiplied by quantity)
+divided by the number of accounts (represented by COUNT(acctnum) in the query). The aliases in front of each of the column names aren't 
+totally necessary because they're unique to each dataset, but it's good practice.
+
+  SELECT
+    SUM(feb.price*feb.quantity)/COUNT(acctnum) avg_amount_per_acct
+  FROM
+    BIT_DB.FebSales feb
+  LEFT JOIN
+    BIT_DB.customers cust
+  ON
+    cust.order_id = feb.orderID
+  WHERE 
+    length(feb.orderid) = 6
+    AND orderid <> 'Order ID'
+
+#The average amount spent per account in February is $190.
+
+_________________________
+#Twelfth question: What was the average quantity of products purchased per account in February? 
+#A bit like the previous question, but simpler, since now we're just looking for total quantity divided by number of accounts:
+
+  SELECT
+    SUM(feb.quantity)/COUNT(cust.acctnum) avg_quant_per_acct
+  FROM
+    BIT_DB.FebSales feb
+  LEFT JOIN
+    BIT_DB.customers cust
+  ON
+    cust.order_id = feb.orderID
+  WHERE 
+    length(orderid) = 6
+    AND orderid <> 'Order ID'
+
+#We get a nice even "1" as the average quantity of products purchased per account in February.
+
+_________________________
+#Thirteenth question: Which product brought in the most revenue in January and how much revenue did it bring in total? 
+#To calculate revenue, we'll multiply price by quantity. To make things simple, we'll order our results in descending order by
+our calculated "revenue" column, and limit our results to one row:
+
+  SELECT
+    product,
+    SUM(price*quantity) revenue
+  FROM
+    BIT_DB.JanSales
+  WHERE 
+    length(orderid) = 6
+    AND orderid <> 'Order ID'
+  GROUP BY 
+    product
+  ORDER BY
+    revenue DESC
+  LIMIT 1
+
+#The Macbook Pro Laptop brought in the most revenue, with a total of $399,500 brought in for January.
