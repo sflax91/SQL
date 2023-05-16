@@ -28,4 +28,149 @@ time_signature integer NOT NULL
 #Then, I came up with my own questions, which I answered using SQL:
 #1. What artists had the most songs in the top 50?
 #2. Which artists has the highest average popularity?
-#3. What are the top 5 most "danceable" songs?
+#3. Of the 5 artists with the highest average popularity, who had an individual song with the lowest score?
+#4. What are the top 5 most "danceable" songs?
+#5. What's the average danceability for the 10 most popular songs?
+
+_____________________________________________________________
+#1. What artists had the most songs in the top 50?
+
+  SELECT
+    artist_name,
+    count(artist_name) num_of_appearances
+  FROM
+    BIT_DB.Spotifydata
+  GROUP BY
+    artist_name
+  ORDER BY
+    2 DESC
+
+#We find that both Olivia Rodrigo and Doja Cat had 4 songs in the top 50, more than any other artist.
+
+_____________________________________________________________
+#2. Which artists has the highest average popularity? (According to the dataset owner, "Popularity is a metric that was created by Spotify team, 
+which is calculated from how much and how often the song was played". It's on a scale from 0-100, with 100 being most popular.)
+
+  SELECT
+    artist_name,
+    avg(popularity),
+    count(artist_name) num_of_songs_in_top_50
+  FROM
+    BIT_DB.Spotifydata
+  GROUP BY
+    artist_name
+  ORDER BY
+    2 DESC
+
+#Ed Sheeran and Glass Animals topped the list with scores of 95 and 94, respectively, though they only had one song each in the top 50. 
+#Olivia Rodrigo came next with a score of 92.25 from her 4 songs. The top 5 is roudned out by The Neighborhood with a score of 92 from 1 song,
+and then The Weeknd, who had two songs, had an average popularity score of 91.5.
+#If we wanted to look at who had the highest raw popularity scores, we could do:
+
+  SELECT
+    artist_name,
+    popularity
+  FROM
+    BIT_DB.Spotifydata
+  ORDER BY
+    2 DESC
+
+#Some familiar faces appear. It turns out Ed Sheeran's 95 was tied with Olivia Rodrigo and Doja Cat for the highest popularity score. 
+Glass Animals and Bad Bunny come in 4th and 5th, each with a score of 94.
+
+_____________________________________________________________
+#3. Of the 5 artists with the highest average popularity, who had an individual song with the lowest score?
+#For this question, I first needed to know the top 5 artists with the highest average popularity. This looks like a previous query,
+but limited to the top 5 results:
+
+  SELECT
+    artist_name,
+    avg(popularity)
+  FROM
+    BIT_DB.Spotifydata
+  GROUP BY
+    artist_name
+  ORDER BY
+    2 DESC
+  LIMIT 5
+
+#Now, using this data, I joined it with the whole dataset to only show me the artists in the top 5, their songs and popularity scores,
+and then ordered it by popularity in ascending order (so the lowest score would be at the top):
+
+  SELECT
+    top5.artist_name,
+    track_name,
+    popularity
+  FROM
+    BIT_DB.Spotifydata data
+  INNER JOIN
+    (SELECT
+      artist_name,
+      avg(popularity)
+    FROM
+      BIT_DB.Spotifydata
+    GROUP BY
+      artist_name
+    ORDER BY
+      2 DESC
+    LIMIT 5) top5
+  ON top5.artist_name = data.artist_name
+  ORDER BY
+    popularity ASC
+
+#Both Olivia Rodrigo and The Weeknd, with their songs deja vu and Save Your Tears, respectively, had a popularity score of 90, 
+which is the lowest score among the artists with the highest average popularity scores.
+
+_____________________________________________________________
+#4. What are the top 5 most "danceable" songs? (From Spotify: "Danceability describes how suitable a track is for dancing based on a combination of musical elements including tempo, 
+rhythm stability, beat strength, and overall regularity. A value of 0.0 is least danceable and 1.0 is most danceable.")
+
+  SELECT
+    track_name,
+    artist_name,
+    danceability
+  FROM
+    BIT_DB.Spotifydata
+  ORDER BY
+    danceability DESC
+  LIMIT 5
+
+#Since it's only 5 results, I'll post the answers here:
+track_name                                          artist_name     danceability
+Qué Más Pues?	                                      J Balvin	      0.903
+LA NOCHE DE ANOCHE	                                Bad Bunny	      0.856
+Fiel	                                              Los Legendarios	0.849
+34+35	                                              Ariana Grande	  0.83
+Friday (feat. Mufasa & Hypeman) - Dopamine Re-Edit	Riton	          0.824
+
+_____________________________________________________________
+#5. What's the average danceability for the 10 most popular songs?
+#We've looked at popularity and danceability, now let's bring them together!
+#To figure out the top 10, we can run a simple query like this:
+
+  SELECT
+    track_name,
+    popularity,
+    danceability
+  FROM
+    BIT_DB.Spotifydata
+  ORDER BY
+    popularity DESC
+  LIMIT 10
+
+#But wait! I can tell from the results that different songs can share the same popularity score, 
+so it's possible that I'm cutting off songs that have the same popularity (92) as the last few songs on my top 10 list.
+To check this, I limited to 15 results and see what comes up. Sure enough, a few songs with the score of 92 were not
+included initially. So, the "top 10 most popular songs" wasn't the best way to ask. Instead, let's rephrase the question
+to be "What's the average danceability for songs with a popularity rating of at least 92" (we could also rephrase to 
+"top 8 songs" or "top 12 songs").
+
+  SELECT
+    avg(danceability) top_danceability_avg
+  FROM
+    BIT_DB.Spotifydata
+  WHERE 
+    popularity >= 92
+
+#We get an average danceability rating of 0.63625 for songs with a popularity rating of at least 92.
+
