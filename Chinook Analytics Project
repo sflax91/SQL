@@ -1,0 +1,339 @@
+#As part of the Break Into Tech certificate course, I downloaded data on a fictional digital media store.
+#Dataset here: https://cdn.fs.teachablecdn.com/dRmwOLQsS22FVFbXfh3x
+#This dataset was uploaded to SQLite. 
+#The datatset table names and relationships can be found here: https://i.imgur.com/97ImHXD.png
+
+#Several question prompts were provided to us, and I created a few questions of my own to answer.
+
+_____________________________________________________________
+#1. Show Customers (their full names, customer ID, and country) who are not in the US.
+
+  SELECT
+    customerid,
+    firstname || " " ||lastname full_name,
+    country
+  FROM
+    chinook.customers
+  WHERE
+    country <> "USA"
+
+#This produces a list of 46 names (I've decided to combine first and last names for aesthetic reasons) who are not from the US.
+_____________________________________________________________
+#2. Show only the Customers from Brazil.
+
+  SELECT
+    customerid,
+    firstname || " " ||lastname full_name,
+    country
+  FROM
+    chinook.customers
+  WHERE
+    country = "Brazil"
+
+_____________________________________________________________
+#3. Find the Invoices of customers who are from Brazil. The resulting table should show the customer's full name, Invoice ID, 
+Date of the invoice, and billing country.
+
+  SELECT
+    cust.firstname || " " || cust.lastname full_name,
+    inv.invoiceid,
+    inv.invoicedate,
+    inv.billingcountry
+  FROM 
+    chinook.invoices inv
+  LEFT JOIN
+    chinook.customers cust ON inv.invoiceid = cust.customerid
+  WHERE
+    inv.billingcountry = "Brazil"
+
+_____________________________________________________________
+#4. Show the Employees who are Sales Agents.
+
+  SELECT
+    *
+  FROM
+    chinook.employees
+  WHERE
+    title = "Sales Support Agent"
+    
+_____________________________________________________________
+#5. Find a unique/distinct list of billing countries from the Invoice table.
+
+  SELECT
+    distinct billingcountry
+  FROM
+    chinook.invoices
+
+_____________________________________________________________
+#6. Provide a query that shows the invoices associated with each sales agent. 
+The resulting table should include the Sales Agent's full name. 
+
+  SELECT
+    emp.firstname || " " || emp.lastname full_name,
+    inv.invoiceid
+  FROM
+    chinook.employees emp
+  JOIN
+    chinook.customers cust ON emp.employeeid = cust.supportrepid
+  JOIN
+    chinook.invoices inv ON cust.customerid = inv.invoiceid
+
+_____________________________________________________________
+#7. Show the Invoice Total, Customer name, Country, and Sales Agent name 
+for all invoices and customers.
+
+  SELECT
+    cust.firstname ||" "||cust.lastname cust_full_name,
+    cust.country,
+    inv.total,
+    emp.firstname || " " || emp.lastname emp_full_name
+  FROM
+    chinook.employees emp
+  JOIN
+    chinook.customers cust ON emp.employeeid = cust.supportrepid
+  JOIN
+    chinook.invoices inv ON cust.customerid = inv.invoiceid
+
+_____________________________________________________________
+#8. How many Invoices were there in 2009?
+
+  SELECT
+    invoicedate
+  FROM
+    chinook.invoices
+    
+  ##all invoices start with year##
+
+  SELECT
+    count(invoiceid)
+  FROM
+    chinook.invoices
+  WHERE
+    invoicedate LIKE "2009%"
+    
+    ##cheeky way ##
+    
+    ##non-cheeky-way:##
+  SELECT
+    count(invoiceid)
+  FROM
+    chinook.invoices
+  WHERE
+    invoicedate BETWEEN '2009-01-01' AND '2009-12-31'
+
+_____________________________________________________________
+#9. What are the total sales for 2009?
+
+  SELECT
+    sum(total)
+  FROM
+    chinook.invoices
+  WHERE
+    invoicedate BETWEEN '2009-01-01' AND '2009-12-31'
+
+_____________________________________________________________
+#10. Write a query that includes the purchased track name with each invoice line ID.
+
+  SELECT
+    track.name,
+    inv.invoicelineid
+  FROM
+    chinook.invoice_items inv
+  JOIN
+    chinook.tracks track ON track.trackid = inv.trackid
+
+_____________________________________________________________
+#11.Write a query that includes the purchased track name AND artist name with each invoice line ID.
+
+  SELECT
+    t.name as track_name,
+    ar.name as artist_name,
+    i.invoicelineid
+  FROM
+    chinook.tracks as t
+  JOIN 
+    chinook.invoice_items as i ON t.trackid = i.trackid
+  JOIN 
+    chinook.albums as al ON al.albumid = t.albumid
+  JOIN 
+    chinook.artists as ar ON ar.artistid = al.artistid;
+
+_____________________________________________________________
+#12. Provide a query that shows all the Tracks, and include the Album name, Media type, and Genre.
+
+  SELECT
+    t.name track_name,
+    a.title album,
+    m.name media_type,
+    g.name genre
+  FROM
+    chinook.tracks t
+  JOIN 
+    chinook.albums a ON t.albumid = a.albumid
+  JOIN 
+    chinook.media_types m ON m.mediatypeid = t.mediatypeid
+  JOIN 
+    chinook.genres g ON g.genreid = t.genreid
+
+_____________________________________________________________
+#13. Show the total sales made by each sales agent.
+
+  SELECT
+    e.firstname,    
+    e.lastname,
+    ROUND(sum(i.total),2) as Total_Sales
+  FROM
+    chinook.employees e
+  JOIN 
+    chinook.customers c ON e.employeeid = c.supportrepid
+  JOIN 
+    chinook.invoices i ON c.customerid = i.customerid
+  GROUP BY
+    e.lastname
+
+_____________________________________________________________
+#14. Which sales agent made the most dollars in sales in 2009? 
+
+  SELECT
+    e.firstname,    
+    e.lastname,
+    ROUND(sum(i.total),2) as Total_Sales
+  FROM
+    chinook.employees e
+  JOIN 
+    chinook.customers c ON e.employeeid = c.supportrepid
+  JOIN
+    chinook.invoices i ON c.customerid = i.customerid
+  WHERE
+    i.invoicedate LIKE '2009%'
+    AND
+    e.Title = 'Sales Support Agent' 
+  GROUP BY
+    e.firstname
+  ORDER BY
+    3 DESC
+  LIMIT 1
+
+_____________________________________________________________
+#15. What song appeared on the most playlists?
+
+  SELECT
+    t.trackid,
+    t.name,
+    count(t.trackid)
+  FROM
+    chinook.tracks t
+  JOIN
+    chinook.playlist_track pt ON t.trackid = pt.trackid
+  GROUP BY
+    t.name,
+    t.trackid
+   ORDER BY
+    3 DESC
+
+    ##there are 18 playlists    
+  SELECT
+    distinct playlistid
+  FROM
+    chinook.playlist_track
+        
+  SELECT
+    *
+  FROM
+    chinook.playlist_track
+  WHERE 
+    trackid = '3403'
+
+_____________________________________________________________
+#16. What was the highest selling song in 2009?
+
+  SELECT
+    t.name,
+    sum(i.total)
+  FROM
+    chinook.tracks t
+  JOIN
+    chinook.invoice_items it ON t.trackid = it.trackid
+  JOIN
+    chinook.invoices i ON i.invoiceid = it.invoicelineid
+  WHERE
+    i.invoicedate LIKE '2009%'
+  GROUP BY
+    t.name
+  ORDER BY
+    sum(i.total) DESC
+
+_____________________________________________________________
+#17. What was the best-selling genre in 2009?
+
+  SELECT
+    g.name genre_name,
+    sum(i.total)
+  FROM
+    chinook.genres g
+  JOIN 
+    chinook.tracks t ON g.genreid = t.genreid
+  JOIN 
+    chinook.invoice_items it ON it.trackid = t.trackid
+  JOIN 
+    chinook.invoices i ON i.invoiceid = it.invoicelineid
+  WHERE
+    i.invoicedate LIKE '2009%'
+  GROUP BY
+    genre_name
+  ORDER BY
+    2 DESC
+
+_____________________________________________________________
+#18. What was the best-selling genre in 2010?
+
+  SELECT
+    g.name genre_name,
+    sum(i.total)
+  FROM
+    chinook.genres g
+  JOIN 
+    chinook.tracks t ON g.genreid = t.genreid
+  JOIN 
+    chinook.invoice_items it ON it.trackid = t.trackid
+  JOIN 
+    chinook.invoices i ON i.invoiceid = it.invoicelineid
+  WHERE
+    i.invoicedate LIKE '2010%'
+  GROUP BY
+    genre_name
+  ORDER BY
+    2 DESC
+
+_____________________________________________________________
+#19. Data spans from 2009 to 2013. Create a table which shows the best-selling genre for each year.
+
+  SELECT 
+    genre_name,
+    year,
+    ROUND(max(total),2) as total_sales
+  FROM (
+        SELECT
+          g.name genre_name,
+          CASE WHEN i.invoicedate BETWEEN '2009-01-01' AND '2009-12-31' THEN '2009'
+               WHEN i.invoicedate BETWEEN '2010-01-01' AND '2010-12-31' THEN '2010'
+               WHEN i.invoicedate BETWEEN '2011-01-01' AND '2011-12-31' THEN '2011'
+               WHEN i.invoicedate BETWEEN '2012-01-01' AND '2012-12-31' THEN '2012'
+               WHEN i.invoicedate BETWEEN '2013-01-01' AND '2013-12-31' THEN '2013'
+               ELSE NULL 
+                END AS year,
+          sum(i.total) as total
+        FROM
+          chinook.genres g
+        JOIN 
+          chinook.tracks t ON g.genreid = t.genreid
+        JOIN 
+          chinook.invoice_items it ON it.trackid = t.trackid
+        JOIN 
+          chinook.invoices i ON i.invoiceid = it.invoicelineid
+        GROUP BY
+          genre_name,    
+          year
+        )
+GROUP BY
+  year
