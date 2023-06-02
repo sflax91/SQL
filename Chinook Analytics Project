@@ -30,6 +30,7 @@ _____________________________________________________________
   WHERE
     country = "Brazil"
 
+#This produces a list of 5 customers from Brazil.
 _____________________________________________________________
 #3. Find the Invoices of customers who are from Brazil. The resulting table should show the customer's full name, Invoice ID, 
 Date of the invoice, and billing country.
@@ -42,10 +43,11 @@ Date of the invoice, and billing country.
   FROM 
     chinook.invoices inv
   LEFT JOIN
-    chinook.customers cust ON inv.invoiceid = cust.customerid
+    chinook.customers cust ON inv.customerid = cust.customerid
   WHERE
     inv.billingcountry = "Brazil"
 
+#This produces a list of 35 invoices from the 5 Brazilian customers. 
 _____________________________________________________________
 #4. Show the Employees who are Sales Agents.
 
@@ -55,7 +57,8 @@ _____________________________________________________________
     chinook.employees
   WHERE
     title = "Sales Support Agent"
-    
+
+#There are 3 Sales Support Agents: Jane Peacock, Margaret PArk, and Steve Johnson.
 _____________________________________________________________
 #5. Find a unique/distinct list of billing countries from the Invoice table.
 
@@ -64,9 +67,9 @@ _____________________________________________________________
   FROM
     chinook.invoices
 
+#There are 24 unique countries in the invoice table.
 _____________________________________________________________
-#6. Provide a query that shows the invoices associated with each sales agent. 
-The resulting table should include the Sales Agent's full name. 
+#6. Provide a query that shows the invoices associated with each sales agent. The resulting table should include the Sales Agent's full name. 
 
   SELECT
     emp.firstname || " " || emp.lastname full_name,
@@ -76,11 +79,11 @@ The resulting table should include the Sales Agent's full name.
   JOIN
     chinook.customers cust ON emp.employeeid = cust.supportrepid
   JOIN
-    chinook.invoices inv ON cust.customerid = inv.invoiceid
+    chinook.invoices inv ON cust.customerid = inv.customerid
 
+#This produces 412 results, with the 3 Sales Agents associated with many invoices. 
 _____________________________________________________________
-#7. Show the Invoice Total, Customer name, Country, and Sales Agent name 
-for all invoices and customers.
+#7. Show the Invoice Total, Customer name, Country, and Sales Agent name for all invoices and customers.
 
   SELECT
     cust.firstname ||" "||cust.lastname cust_full_name,
@@ -92,17 +95,20 @@ for all invoices and customers.
   JOIN
     chinook.customers cust ON emp.employeeid = cust.supportrepid
   JOIN
-    chinook.invoices inv ON cust.customerid = inv.invoiceid
+    chinook.invoices inv ON cust.customerid = inv.customerid
 
+#This again produces a list of 412 results with the Sales Agents connected with many invoices, except this time, instead of the invoice id, we have the customer name, their country, and the total for the invoice.
 _____________________________________________________________
 #8. How many Invoices were there in 2009?
 
+#First, I wanted to peek at how the dates are formatted:
   SELECT
     invoicedate
   FROM
     chinook.invoices
     
-  ##all invoices start with year##
+#All invoices start with year in this format: yyyy-mm-dd xx:xx:xx
+#So, one way to find invoices from 2009 is:
 
   SELECT
     count(invoiceid)
@@ -111,9 +117,7 @@ _____________________________________________________________
   WHERE
     invoicedate LIKE "2009%"
     
-    ##cheeky way ##
-    
-    ##non-cheeky-way:##
+#Alternatively, this format also works:
   SELECT
     count(invoiceid)
   FROM
@@ -121,6 +125,7 @@ _____________________________________________________________
   WHERE
     invoicedate BETWEEN '2009-01-01' AND '2009-12-31'
 
+#There were 83 invoices in 2009.
 _____________________________________________________________
 #9. What are the total sales for 2009?
 
@@ -131,6 +136,7 @@ _____________________________________________________________
   WHERE
     invoicedate BETWEEN '2009-01-01' AND '2009-12-31'
 
+#The total sales from 2009 are $449.46.
 _____________________________________________________________
 #10. Write a query that includes the purchased track name with each invoice line ID.
 
@@ -142,6 +148,7 @@ _____________________________________________________________
   JOIN
     chinook.tracks track ON track.trackid = inv.trackid
 
+#We are given a long list of 2240 rows showing the track title and each invoice it appeared on.
 _____________________________________________________________
 #11.Write a query that includes the purchased track name AND artist name with each invoice line ID.
 
@@ -158,6 +165,7 @@ _____________________________________________________________
   JOIN 
     chinook.artists as ar ON ar.artistid = al.artistid;
 
+#This is the same list as the previous question, except now we have the artist name!
 _____________________________________________________________
 #12. Provide a query that shows all the Tracks, and include the Album name, Media type, and Genre.
 
@@ -175,6 +183,7 @@ _____________________________________________________________
   JOIN 
     chinook.genres g ON g.genreid = t.genreid
 
+#A list of 3503 tracks, with their album name, media type, and genre, is produced. As a note, I also ran this query with Full Joins, and was given the same # of results, indicating that that each track/album/media type/genre has a corresponding track/album/media type/genre.
 _____________________________________________________________
 #13. Show the total sales made by each sales agent.
 
@@ -191,6 +200,7 @@ _____________________________________________________________
   GROUP BY
     e.lastname
 
+#Steve sold $720.16 worth of media, Margaret sold $775.40, and Jane sold $833.04. Way to go, Jane! (Side note: these numbers seem low for multiple years worth of media sales, but we don't have any metadata describing the "total" field.)
 _____________________________________________________________
 #14. Which sales agent made the most dollars in sales in 2009? 
 
@@ -214,6 +224,7 @@ _____________________________________________________________
     3 DESC
   LIMIT 1
 
+#Steve sold the most, with $164.34. Good job, Steve!
 _____________________________________________________________
 #15. What song appeared on the most playlists?
 
@@ -231,19 +242,37 @@ _____________________________________________________________
    ORDER BY
     3 DESC
 
-    ##there are 18 playlists    
-  SELECT
-    distinct playlistid
-  FROM
-    chinook.playlist_track
-        
+#A lot of songs appeared on 5 playlists (41, to be exact). They all seem to be classical music songs. Taking a look at the playlists:
+
   SELECT
     *
   FROM
-    chinook.playlist_track
-  WHERE 
-    trackid = '3403'
+    chinook.playlists
 
+#We find 18 playlists (confirmed with  
+                                      SELECT
+                                        distinct playlistid
+                                      FROM
+                                        chinook.playlist_track
+                      )
+including 4 classical music playlists, and two each of "Music", "Movies", "Audiobooks", and "TV shows". So, it makes sense that many songs might appear on multiple playlists. To check my work, I took the track id from one of these songs:
+ 
+  SELECT
+    *
+  FROM
+    chinook.playlist_track pt
+  JOIN
+    chinook.playlists p ON pt.playlistid = p.playlistid
+  JOIN 
+    chinook.albums a ON t.albumid = a.albumid
+  JOIN 
+    chinook.genres g ON g.genreid = t.genreid
+  JOIN
+    chinook.tracks t ON t.trackid = pt.trackid
+  WHERE 
+    t.trackid = '3403'
+
+#And sure enough, it's a classical music song appearing on two separate "Music" playlists, the "Classical" and "Classical 101 - The Basics" playlists and, oddly, the "90's Music" playlist. 
 _____________________________________________________________
 #16. What was the highest selling song in 2009?
 
@@ -263,6 +292,7 @@ _____________________________________________________________
   ORDER BY
     sum(i.total) DESC
 
+#We have a number of songs tied for highest-selling (12), each totaling 13.86 (which means that each song was sold 14 times, since each song is $0.99)
 _____________________________________________________________
 #17. What was the best-selling genre in 2009?
 
@@ -284,6 +314,7 @@ _____________________________________________________________
   ORDER BY
     2 DESC
 
+#This was a fun one. "Latin" came in at the top with $132.66 in sales, followed by "Rock" ($113.85) and "Alternative & Punk" ($51.48).
 _____________________________________________________________
 #18. What was the best-selling genre in 2010?
 
@@ -305,8 +336,9 @@ _____________________________________________________________
   ORDER BY
     2 DESC
 
+#The top 3 remain the same, but with "Rock" and "Latin" switching places. In 2010, "Rock" came out on top ($186.33), followed by "Latin" ($137.68) and then "Alternative & Punk" ($104.94)
 _____________________________________________________________
-#19. Data spans from 2009 to 2013. Create a table which shows the best-selling genre for each year.
+#19. The data spans from 2009 to 2013. Create a table which shows the best-selling genre for each year.
 
   SELECT 
     genre_name,
@@ -337,3 +369,13 @@ _____________________________________________________________
         )
 GROUP BY
   year
+
+#Results are below - we already know the answers for 2009 and 2010, so here's the rest:
+genre_name  year  total_sales
+Latin	      2009	132.66
+Rock	      2010	186.33
+Rock	      2011	150.65
+Metal	      2012	179.54
+Rock	      2013	220.9
+
+#Surprise appearance from "Metal" in 2012!
